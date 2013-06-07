@@ -49,9 +49,32 @@ if ($_GET['dir']) {
     $sortdir = 'DESC';
     $sortdirnum = 0;
 }
+if ($_GET['filter']) {
+    $filternum = $_GET['filter'];
+    switch ($_GET['filter']) {
+        case 0:
+            $filter = '';
+            break;
+        case 1:
+            $filter = "AND (LENGTH(caller) > $exten_len AND LENGTH(called) = $exten_len)";
+            break;
+        case 2:
+            $filter = "AND (LENGTH(caller) = $exten_len AND LENGTH(called) > $exten_len)";
+            break;
+        case 3:
+            $filter = "AND (LENGTH(caller) = $exten_len AND LENGTH(called) = $exten_len)";
+            break;
+        default:
+            die('Bad filter value');
+    }
+
+} else {
+    $filternum = 0;
+    $filter = '';
+}
 
 // Ok let's query some data
-$sql = "SELECT `ID`, `calldate`, `callend`, `duration`, `connect_duration`, `caller`, `callername`, `called`, `whohanged` FROM `cdr` WHERE `connect_duration` > 0 AND DATE(calldate) = \"{$pagedate}\" ORDER BY `{$sortkey}` {$sortdir}";
+$sql = "SELECT `ID`, `calldate`, `callend`, `duration`, `connect_duration`, `caller`, `callername`, `called`, `whohanged` FROM `cdr` WHERE `connect_duration` > 0 {$filter} AND DATE(calldate) = \"{$pagedate}\" ORDER BY `{$sortkey}` {$sortdir}";
 
 if(!$result = $db->query($sql)){
     die('There was an error running the query [' . $db->error . ']');
@@ -82,8 +105,8 @@ function sec2hms ($sec, $padHours = false) {
 }
 
 function sortbuttons ($sortkey) {
-    echo "<a href=\"?date={$pagedate}&sort={$sortkey}&dir=0\"><img src=\"images/arrow_up.png\" /></a>";
-    echo "<a href=\"?date={$pagedate}&sort={$sortkey}&dir=1\"><img src=\"images/arrow_down.png\" /></a>";
+    echo "<a href=\"?date={$pagedate}&sort={$sortkey}&dir=0&filter={$filternum}\"><img src=\"images/arrow_up.png\" /></a>";
+    echo "<a href=\"?date={$pagedate}&sort={$sortkey}&dir=1&filter={$filternum}\"><img src=\"images/arrow_down.png\" /></a>";
     return TRUE;
 }
 ?>
@@ -100,7 +123,24 @@ table td {font-size:12px;border-width: 1px;padding: 8px;border-style: solid;bord
 <title>Call Recordings</title>
 </head>
 <body>
-<p></p>
+<p align="center">Filter Calls: 
+<?php
+switch ($filternum) {
+	case 0:
+		echo "<a href=\"?date={$pagedate}&sort={$sortkeynum}&dir={$sortdirnum}&filter=0\">ALL</a> | <a href=\"?date={$pagedate}&sort={$sortkeynum}&dir={$sortdirnum}&filter=1\">Incoming</a> | <a href=\"?date={$pagedate}&sort={$sortkeynum}&dir={$sortdirnum}&filter=2\">Outgoing</a> | <a href=\"?date={$pagedate}&sort={$sortkeynum}&dir={$sortdirnum}&filter=3\">Internal</a>";
+		break;
+	case 1:
+		echo "<a href=\"?date={$pagedate}&sort={$sortkeynum}&dir={$sortdirnum}&filter=0\">All</a> | <a href=\"?date={$pagedate}&sort={$sortkeynum}&dir={$sortdirnum}&filter=1\">INCOMING</a> | <a href=\"?date={$pagedate}&sort={$sortkeynum}&dir={$sortdirnum}&filter=2\">Outgoing</a> | <a href=\"?date={$pagedate}&sort={$sortkeynum}&dir={$sortdirnum}&filter=3\">Internal</a>";
+		break;
+	case 2:
+		echo "<a href=\"?date={$pagedate}&sort={$sortkeynum}&dir={$sortdirnum}&filter=0\">All</a> | <a href=\"?date={$pagedate}&sort={$sortkeynum}&dir={$sortdirnum}&filter=1\">Incoming</a> | <a href=\"?date={$pagedate}&sort={$sortkeynum}&dir={$sortdirnum}&filter=2\">OUTGOING</a> | <a href=\"?date={$pagedate}&sort={$sortkeynum}&dir={$sortdirnum}&filter=3\">Internal</a>";
+		break;
+	case 3:
+		echo "<a href=\"?date={$pagedate}&sort={$sortkeynum}&dir={$sortdirnum}&filter=0\">All</a> | <a href=\"?date={$pagedate}&sort={$sortkeynum}&dir={$sortdirnum}&filter=1\">Incoming</a> | <a href=\"?date={$pagedate}&sort={$sortkeynum}&dir={$sortdirnum}&filter=2\">Outgoing</a> | <a href=\"?date={$pagedate}&sort={$sortkeynum}&dir={$sortdirnum}&filter=3\">INTERNAL</a>";
+		break;
+}
+?>
+</p>
 
 <table border="1">
 <tr><th>Call Time<?php sortbuttons(0); ?></th><th>WAV</th><th>Call Duration</th><th>Caller<?php sortbuttons(1); ?></th><th>Callee<?php sortbuttons(2); ?></th><th>Terminating Party</th></tr>
