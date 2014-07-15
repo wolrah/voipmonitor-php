@@ -158,7 +158,11 @@ while($row = $result->fetch_assoc()){
     }
     $callterm = $row['called'];
     $callhang = $row['whohanged'];
-    echo "<tr><td>{$calldate}</td><td><a href=\"getwav.php?id={$callid}\"><img src=\"images/sound.png\" /></a></td><td>{$calllen}</td><td>{$callcnam}</td><td>{$callterm}</td><td>{$callhang}</td></tr>";
+    echo "<tr><td>{$calldate}</td><td><a href=\"getwav.php?id={$callid}\"><img src=\"images/sound.png\" /></a>";
+    if ($_GET['p']) {
+        echo "<a href=\"savewav.php?id={$callid}\">s</a><a href=\"getpcap.php?id={$callid}\">P</a><a href=\"savepcap.php?id={$callid}\">S</a>";
+    }
+    echo "</td><td>{$calllen}</td><td>{$callcnam}</td><td>{$callterm}</td><td>{$callhang}</td></tr>";
 }
 ?>
 <tr><td>
